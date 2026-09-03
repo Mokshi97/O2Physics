@@ -125,6 +125,7 @@ struct HfDerivedDataCreatorDstarToD0Pi {
       LOGP(fatal, "Only one process function can be enabled at a time.");
     }
     rowsCommon.init(confDerData);
+    LOGP(info, "[DEBUG] HfDerivedDataCreatorDstarToD0Pi::init — processData={} processDataMl={}", static_cast<bool>(doprocessData), static_cast<bool>(doprocessDataMl)); // ADDED 
   }
 
   template <typename T, typename U>
@@ -219,6 +220,7 @@ struct HfDerivedDataCreatorDstarToD0Pi {
         rowsCommon.matchedCollisions.clear();
       }
     }
+    int nCandTotal = 0, nCandKept = 0; // ADDED
     // const auto sizeTableColl = collisions.size();
     // rowsCommon.reserveTablesColl(sizeTableColl);
     const auto sizeTableCand = candidates.size() * NHypothesesCand;
@@ -254,11 +256,13 @@ struct HfDerivedDataCreatorDstarToD0Pi {
       double ptBhadMotherPart = 0;
       int pdgBhadMotherPart = 0;
       for (const auto& candidate : candidatesThisColl) {
+        nCandTotal++; // ADDED
         if constexpr (IsMl) {
-          if (!TESTBIT(candidate.isSelDstarToD0Pi(), aod::SelectionStep::RecoMl)) {
+          if (!candidate.isSelDstarToD0Pi()) {
             continue;
           }
         }
+        nCandKept++; // ADDED
         if constexpr (IsMc) {
           flagMcRec = candidate.flagMcMatchRec();
           flagMcRecD0 = candidate.flagMcMatchRecD0();
@@ -305,6 +309,7 @@ struct HfDerivedDataCreatorDstarToD0Pi {
         fillTablesCandidate(candidate, prong0, prong1, prongSoftPi, flagSign, massDstar, invMassD0, y, flagMcRec, flagMcRecD0, origin, nTracksDecayed, ptBhadMotherPart, pdgBhadMotherPart, mlScoresDstarToD0Pi);
       }
     }
+     LOGP(info, "[DEBUG] processCandidates<IsMl={}>: nCandTotal={} nCandKept={}", static_cast<bool>(IsMl), nCandTotal, nCandKept); // ADDED
   }
 
   void processData(CollisionsWCentMult const& collisions,
